@@ -1,0 +1,10 @@
+env.json
+.DS_Store
+yarn-error.log
+node_modules/
+cache/
+.yarn/
+.yarnrc.yml
+.pnp.cjs
+.pnp.loader.mjs
+.vscode/
