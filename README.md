@@ -39,10 +39,12 @@ The purpose of this challenge is to demonstrate a principal solution, a full sol
   - handle nonce and transaction fee
   - handle instability of the archive node
 
-- Handling duplicate messages.
+- Handling duplicate messages
+
   According to the challenge, "In case the message number is not greater than the previous one, this means that this is a duplicate message. In this case it still should be processed, but the message details do not need to be checked." The purpose of the contract is to set the state to the maximum valid message number, therefore if at least one message with the same number is valid, we should account for this number when finding the maximum message number. If both messages are invalid, we will drop BOTH messages. In such way, we still guarantee that invalid message cannot be processed by resending it (processing invalid message by resending it clearly was not the intention of the challenge wording)
 
 - Circuit size optimization
+
   According to the challenge, "This program is needed to run on low spec hardware so you need to find a way to process the batch so that the circuit size remains low." The circuit size can be changed by changing the constant BATCH_SIZE. We assume that having number of rows sightly less than 50% of the maximum size is optimal choice for low spec hardware. For very low spec hardware, the BATCH_SIZE can be set even lower in accordance with the table above.
 
 ## Installation
