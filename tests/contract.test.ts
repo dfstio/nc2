@@ -10,7 +10,7 @@ import {
 } from "o1js";
 import { Message, MessageMaster, BATCH_SIZE } from "../src/contract";
 
-const MESSAGES_COUNT = BATCH_SIZE * 3;
+const MESSAGES_COUNT = BATCH_SIZE * 4;
 
 describe("Challenge 2", () => {
   const Local = Mina.LocalBlockchain();

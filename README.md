@@ -4,11 +4,11 @@
 
 ### Using recursive proofs
 
-Currently, the number of proofs that can be calculated and merged on high-memory PC is around 150-200, on low-memory PC is less than 50, so processing of the batch of 50-200 messages is not possible on low end hardware assuming that we will need calculate one proof per message and then merge all the calculated proofs.
+Currently, the number of proofs that can be calculated and merged before running out of memory on high-memory PC is around 150-200, on low-memory PC is less than 50, so processing of the batch of 50-200 messages is not possible on low memory hardware assuming that we will need calculate one proof per message and then merge all the calculated proofs.
 
 ### Using Actions and Reducer
 
-The actions can be divided into the batches, and the size of the batch will determine the size of the contract. Given that total number of the actions can be greater than the batch size, maxTransactionsWithActions should be set to BATCH_SIZE and skipActionStatePrecondition should be set to true
+The actions can be divided into the batches, and the size of the batch will determine the size of the contract. Given that total number of the actions can be greater than the batch size, maxTransactionsWithActions should be set to BATCH_SIZE and skipActionStatePrecondition should be set to true:
 
 ```typescript
         {
@@ -22,7 +22,7 @@ The additional variable isSynced should be introduced to show that all the batch
 ## The size of the contract depending on batch size
 
 ```
-Batch Size     Rows number       % of max rows
+BATCH_SIZE     Rows number       % of max rows
 3              4993               8%
 5              6100               9%
 50             31007             47%
@@ -34,9 +34,16 @@ Batch Size     Rows number       % of max rows
 The purpose of this challenge is to demonstrate a principal solution, a full solution with UI is not required, therefore to simplify the code we can use the following assumptions that do not contradict the challenge's text:
 
 - Testing on a local blockchain is enough. This will allow us to omit the parts of the code that
+
   - fetch accounts from the Mina node
   - handle nonce and transaction fee
   - handle instability of the archive node
+
+- Handling duplicate messages.
+  According to the challenge, "In case the message number is not greater than the previous one, this means that this is a duplicate message. In this case it still should be processed, but the message details do not need to be checked." The purpose of the contract is to set the state to the maximum valid message number, therefore if at least one message with the same number is valid, we should account for this number when finding the maximum message number. If both messages are invalid, we will drop BOTH messages. In such way, we still guarantee that invalid message cannot be processed by resending it (processing invalid message by resending it clearly was not the intention of the challenge wording)
+
+- Circuit size optimization
+  According to the challenge, "This program is needed to run on low spec hardware so you need to find a way to process the batch so that the circuit size remains low." The circuit size can be changed by changing the constant BATCH_SIZE. We assume that having number of rows sightly less than 50% of the maximum size is optimal choice for low spec hardware. For very low spec hardware, the BATCH_SIZE can be set even lower in accordance with the table above.
 
 ## Installation
 
@@ -77,46 +84,46 @@ All files    |     100 |      100 |     100 |     100 |
 
 ```
 nc2 % yarn test
-[8:18:30 PM] methods analyzed: 3.127s
-[8:18:30 PM] method's total size for a contract with batch size 50 is 31007 rows (47% of max 65536 rows)
-[8:18:30 PM] add rows: 2960
-[8:18:30 PM] reduce rows: 28047
-[8:18:30 PM] Compiling contract...
-[8:18:35 PM] MessageMaster compiled: 5.388s
-[8:18:35 PM] RSS memory should compile the SmartContract: 1072 MB
-[8:18:35 PM] Generated 200 messages, 111 messages are invalid
-[8:18:35 PM] RSS memory deployed the contract: 1075 MB
-[8:18:47 PM] RSS memory Setting base for RSS memory: 1358 MB
-[8:19:59 PM] RSS memory Message 20/200 sent: 1591 MB, changed by 233 MB
-[8:23:12 PM] RSS memory Message 60/200 sent: 2078 MB, changed by 720 MB
-[8:25:02 PM] RSS memory Message 80/200 sent: 2316 MB, changed by 958 MB
-[8:25:54 PM] RSS memory Message 90/200 sent: 2555 MB, changed by 1197 MB
-[8:28:17 PM] RSS memory Message 120/200 sent: 2898 MB, changed by 1540 MB
-[8:29:13 PM] RSS memory Message 130/200 sent: 3016 MB, changed by 1658 MB
-[8:30:52 PM] RSS memory Message 150/200 sent: 3233 MB, changed by 1875 MB
-[8:34:40 PM] RSS memory Message 200/200 sent: 3841 MB, changed by 2483 MB
-[8:34:51 PM] sent messages: 16:16.066 (m:ss.mmm)
-[8:34:51 PM] RSS memory sent the messages: 3902 MB, changed by 2544 MB
-[8:34:51 PM] Number of actions: 89
-[8:34:51 PM] Reducing 50 of 89 actions
-[8:35:08 PM] RSS memory updated the state: 4761 MB, changed by 3403 MB
-[8:35:08 PM] reduced: 16.959s
-[8:35:08 PM] Reducing 39 of 39 actions
-[8:35:24 PM] RSS memory updated the state: 4854 MB, changed by 3496 MB
-[8:35:24 PM] reduced: 15.520s
+[8:54:18 PM] methods analyzed: 3.061s
+[8:54:18 PM] method's total size for a contract with batch size 50 is 31007 rows (47% of max 65536 rows)
+[8:54:18 PM] add rows: 2960
+[8:54:18 PM] reduce rows: 28047
+[8:54:18 PM] Compiling contract...
+[8:54:23 PM] MessageMaster compiled: 5.119s
+[8:54:23 PM] RSS memory should compile the SmartContract: 1066 MB
+[8:54:23 PM] Generated 200 messages, 107 messages are invalid
+[8:54:23 PM] RSS memory deployed the contract: 1068 MB
+[8:57:48 PM] RSS memory Message 60/200 sent: 1960 MB
+[8:58:28 PM] RSS memory Message 70/200 sent: 2113 MB
+[8:59:19 PM] RSS memory Message 80/200 sent: 2275 MB
+[9:00:12 PM] RSS memory Message 90/200 sent: 2405 MB
+[9:02:18 PM] RSS memory Message 110/200 sent: 2783 MB
+[9:05:08 PM] RSS memory Message 140/200 sent: 3215 MB
+[9:05:46 PM] RSS memory Message 150/200 sent: 3196 MB
+[9:08:11 PM] RSS memory Message 170/200 sent: 3599 MB
+[9:09:56 PM] RSS memory Message 190/200 sent: 3902 MB
+[9:10:48 PM] sent messages: 16:25.326 (m:ss.mmm)
+[9:10:48 PM] RSS memory sent the messages: 4029 MB
+[9:10:48 PM] Number of actions: 93
+[9:10:48 PM] Reducing 50 of 93 actions
+[9:11:04 PM] RSS memory updated the state: 4947 MB
+[9:11:04 PM] reduced: 15.648s
+[9:11:04 PM] Reducing 43 of 43 actions
+[9:11:18 PM] RSS memory updated the state: 5083 MB
+[9:11:18 PM] reduced: 14.400s
  PASS  tests/contract.test.ts
   Challenge 2
-    ✓ should compile contract (8525 ms)
+    ✓ should compile contract (8190 ms)
     ✓ should generate messages and check validity of the messages (1 ms)
-    ✓ should deploy the contract (197 ms)
-    ✓ should send the messages and check that invalid messages are dropped (976057 ms)
-    ✓ should check the actions (14 ms)
-    ✓ should update the state (32497 ms)
+    ✓ should deploy the contract (196 ms)
+    ✓ should send the messages and check that invalid messages are dropped (985326 ms)
+    ✓ should check the actions (15 ms)
+    ✓ should update the state (30064 ms)
 
 Test Suites: 1 passed, 1 total
 Tests:       6 passed, 6 total
 Snapshots:   0 total
-Time:        1018.244 s
+Time:        1024.779 s
 Ran all test suites.
 
 ```

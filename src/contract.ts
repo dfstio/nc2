@@ -12,7 +12,7 @@ import {
   Provable,
 } from "o1js";
 
-export const BATCH_SIZE = 5;
+export const BATCH_SIZE = 50;
 
 export class Message extends Struct({
   num: Field, // Message number
